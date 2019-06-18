@@ -2,7 +2,7 @@ import gym
 import numpy as np
 
 
-__all__ = ['FlattenDictWrapper']
+__all__ = ['FlattenDictWrapper', 'DictInputWrapper']
 
 
 class FlattenDictWrapper(gym.ObservationWrapper):
@@ -28,19 +28,33 @@ class FlattenDictWrapper(gym.ObservationWrapper):
         return np.concatenate(obs)
 
 
-class DictShapeWrapper(gym.ObservationWrapper):
-    """Add shape to Dict observation space."""
+class DictInputWrapper(gym.ObservationWrapper):
+    """ Wrapper to enable use of Dict observation space as input to policy and algorithm """
 
     def __init__(self, env, dict_keys):
-        super(DictShapeWrapper, self).__init__(env)
+        super(DictInputWrapper, self).__init__(env)
         self.dict_keys = dict_keys
 
         # Figure out observation_space dimension.
         size = 0
-        for key in dict_keys:
-            shape = self.env.observation_space.spaces[key].shape
-            size += np.prod(shape)
+        dtype = None
+        for key in self.env.observation_space.spaces.keys():
+            if key in dict_keys:
+                size += np.prod(self.env.observation_space.spaces[key].shape)
+            else:
+                self.env.observation_space.spaces.popitem(key)
+            if dtype is None:
+                dtype = self.env.observation_space.spaces[key].dtype
+            else:
+                assert dtype == self.env.observation_space.spaces[key].dtype,\
+                    "dtype for all the component observation spaces must be the same"
+
         self.observation_space.shape = (size, )
+        self.observation_space.dtype = self.env.observation_space.spaces[key].dtype
 
     def observation(self, observation):
-        return observation
+        assert isinstance(observation, dict)
+        obs = {}
+        for key in self.dict_keys:
+            obs[key] = observation[key]
+        return obs
