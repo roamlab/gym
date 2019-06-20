@@ -215,6 +215,8 @@ class Wrapper(Env):
         self.reward_range = self.env.reward_range
         self.metadata = self.env.metadata
         self.spec = getattr(self.env, 'spec', None)
+        if hasattr(self.env, 'compute_reward'):
+            self.compute_reward = self.env.compute_reward
 
     def __getattr__(self, name):
         if name.startswith('_'):
