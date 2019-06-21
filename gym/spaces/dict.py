@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from .space import Space
+import numpy as np
 
 
 class Dict(Space):
@@ -82,3 +83,13 @@ class Dict(Space):
 
     def __eq__(self, other):
         return isinstance(other, Dict) and self.spaces == other.spaces
+
+    def to_array(self, sample):
+        assert isinstance(sample, dict), "sample must be a dict"
+        _sample = []
+        for key in self.spaces.keys():
+            _sample.append(sample[key])
+        return np.concatenate(_sample, axis=1)
+
+    def from_array(self, sample):
+        raise NotImplementedError
