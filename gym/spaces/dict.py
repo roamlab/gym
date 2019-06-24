@@ -89,7 +89,7 @@ class Dict(Space):
         _sample = []
         for key in self.spaces.keys():
             _sample.append(sample[key])
-        return np.concatenate(_sample, axis=1)
+        return np.hstack(_sample)
 
     def from_array(self, sample):
         raise NotImplementedError
