@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+from collections import OrderedDict
 
 
 __all__ = ['FlattenDictWrapper', 'DictInputWrapper']
@@ -35,22 +36,22 @@ class DictInputWrapper(gym.ObservationWrapper):
         super(DictInputWrapper, self).__init__(env)
         self.dict_keys = dict_keys
 
-        # Figure out observation_space dimension.
+        # Create a new Dict space, add shape and dtype attributes
+        spaces = OrderedDict()
         size = 0
         dtype = None
-        for key in self.env.observation_space.spaces.keys():
-            if key in dict_keys:
-                size += np.prod(self.env.observation_space.spaces[key].shape)
+        for key in dict_keys:
+            space = self.env.observation_space.spaces[key]
+            shape = space.shape
+            spaces[key] = space
+            size += np.prod(shape)
+            if dtype:
+                assert dtype == space.dtype
             else:
-                self.env.observation_space.spaces.popitem(key)
-            if dtype is None:
-                dtype = self.env.observation_space.spaces[key].dtype
-            else:
-                assert dtype == self.env.observation_space.spaces[key].dtype,\
-                    "dtype for all the component observation spaces must be the same"
-
+                dtype = space.dtype
+        self.observation_space = gym.spaces.Dict(spaces)
         self.observation_space.shape = (size, )
-        self.observation_space.dtype = self.env.observation_space.spaces[key].dtype
+        self.observation_space.dtype = dtype
 
     def observation(self, observation):
         assert isinstance(observation, dict)
