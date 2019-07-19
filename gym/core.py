@@ -259,6 +259,9 @@ class Wrapper(Env):
     def compute_reward(self, achieved_goal, desired_goal, info):
         return self.env.compute_reward(achieved_goal, desired_goal, info)
 
+    def get_obs(self):
+        return self.env.get_obs()
+
     def __str__(self):
         return '<{}{}>'.format(type(self).__name__, self.env)
 
@@ -278,6 +281,9 @@ class ObservationWrapper(Wrapper):
     def reset(self, **kwargs):
         observation = self.env.reset(**kwargs)
         return self.observation(observation)
+
+    def get_obs(self):
+        return self.observation(self.env.get_obs())
 
     def observation(self, observation):
         deprecated_warn_once("%s doesn't implement 'observation' method. Maybe it implements deprecated '_observation' method." % type(self))
